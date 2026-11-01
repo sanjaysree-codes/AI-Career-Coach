@@ -2,7 +2,9 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Activity, ArrowDown, ArrowLeft, ArrowRight, Award, BarChart3, Bell, BookOpenCheck, BriefcaseBusiness, CalendarDays, Check, CheckCircle2, CircleHelp, Clock3, Code2, FilePlus2, FileText, GitCompareArrows, GraduationCap, LayoutDashboard, LockKeyhole, LogOut, Menu, MessageSquareText, Mic, MicOff, Plus, Search, Settings, ShieldCheck, Sparkles, Target, TrendingUp, UploadCloud, X } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || '/api/v1';
+// Production uses the same-origin Vercel rewrite in vercel.json. Local development
+// can still point directly at an API with VITE_API_URL or use the Vite proxy.
+const API = import.meta.env.PROD ? '/api/v1' : (import.meta.env.VITE_API_URL || '/api/v1');
 const Auth = createContext(null);
 function useAuth(){return useContext(Auth)}
 async function request(path, opts={}){

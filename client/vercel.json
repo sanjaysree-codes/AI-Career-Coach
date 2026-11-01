@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://ai-career-coach-gidz.vercel.app/api/$1"
+    }
+  ]
+}
