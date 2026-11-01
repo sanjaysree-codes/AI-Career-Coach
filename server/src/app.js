@@ -106,4 +106,20 @@ api.use((err,req,res,next)=>{
   if(databaseUnavailable)return fail(res,503,'We couldn’t reach the database just now. Please try again shortly.');
   return fail(res,500,'Something went wrong. Please try again.');
 });
-app.use('/api/v1',api);app.get('/api/health',(req,res)=>res.json({ok:true}));export default app;
+// Backend homepage
+app.get('/', (req, res) => {
+  res.json({
+    message: 'CareerCraft Backend is running!',
+    status: 'OK'
+  });
+});
+
+// API routes
+app.use('/api/v1', api);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
+});
+
+export default app;
