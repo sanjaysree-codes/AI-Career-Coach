@@ -231,6 +231,7 @@ export function runCode(options) {
   const mode = (process.env.CODE_RUNNER || 'local').trim().toLowerCase();
   if (mode === 'judge0') return runJudge0(options);
   if (mode !== 'local') throw new Error('CODE_RUNNER must be set to local or judge0.');
+  if (process.env.VERCEL === '1') throw new Error('Docker code execution is not available in Vercel functions. Configure CODE_RUNNER=judge0 and CODE_JUDGE_URL (plus CODE_JUDGE_API_KEY if required) to keep coding run and submission enabled.');
   if (activeLocalRuns >= MAX_CONCURRENT_LOCAL_RUNS) throw new Error('The local code runner is busy. Please try again shortly.');
   activeLocalRuns++;
   return runLocalDocker(options).finally(() => { activeLocalRuns--; });

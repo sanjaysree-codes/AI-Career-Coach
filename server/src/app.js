@@ -48,13 +48,19 @@ api.get('/resumes',auth,async(req,res)=>ok(res,{resumes:await Resume.find({userI
     }
     if(!hasReadableResumeText(text))return fail(res,422,'We could not find readable text in this file. Please upload a clearer PDF or DOCX.');
     stage='resume-persistence';
-    const dir=path.resolve(process.env.UPLOAD_DIR||'./uploads');
-    await fs.mkdir(dir,{recursive:true});
-    const key=String(req.user._id)+'-'+crypto.randomUUID()+ext;
-    const storagePath=path.join(dir,key);
-    await fs.writeFile(storagePath,req.file.buffer,{mode:0o600});
-    const resume=await Resume.create({userId:req.user._id,originalFileName:path.basename(req.file.originalname),storagePath,mimeType:req.file.mimetype,fileSize:req.file.size,extractedText:text,targetRole:req.user.targetRole});
-    return ok(res,{resume:{id:resume._id,originalFileName:resume.originalFileName,analysisStatus:resume.analysisStatus}},201);
+    // Vercel's function filesystem is ephemeral. Resume text is persisted in MongoDB;
+    // the original upload is retained on local deployments only.
+    let storagePath=null;
+    const sourceFileStored=process.env.VERCEL!=='1';
+    if(sourceFileStored){
+      const dir=path.resolve(process.env.UPLOAD_DIR||'./uploads');
+      await fs.mkdir(dir,{recursive:true});
+      const key=String(req.user._id)+'-'+crypto.randomUUID()+ext;
+      storagePath=path.join(dir,key);
+      await fs.writeFile(storagePath,req.file.buffer,{mode:0o600});
+    }
+    const resume=await Resume.create({userId:req.user._id,originalFileName:path.basename(req.file.originalname),storagePath,sourceFileStored,mimeType:req.file.mimetype,fileSize:req.file.size,extractedText:text,targetRole:req.user.targetRole});
+    return ok(res,{resume:{id:resume._id,originalFileName:resume.originalFileName,analysisStatus:resume.analysisStatus,sourceFileStored}},201);
   }catch(error){
     if(error instanceof multer.MulterError)return fail(res,413,'Resume must be no larger than 5 MB.');
     const errorCategory=error?.code==='GEMINI_TIMEOUT'?'timeout':error?.code==='GEMINI_RATE_LIMIT'?'rate-limit':'other';
